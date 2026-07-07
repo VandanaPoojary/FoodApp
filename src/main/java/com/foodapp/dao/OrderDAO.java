@@ -9,7 +9,12 @@ import com.foodapp.model.OrderItemDetail;
 
 public interface OrderDAO {
 
-    int placeOrder(int userId, int restaurantId, double totalAmount, Map<Integer, CartItem> cart);
+    int placeOrder(int userId,
+                   int restaurantId,
+                   double totalAmount,
+                   String deliveryAddress,
+                   String paymentMode,
+                   Map<Integer, CartItem> cart);
 
     List<Order> getOrdersByUserId(int userId);
 

@@ -3,7 +3,6 @@ package com.foodapp.controller;
 import java.io.IOException;
 import java.util.Map;
 
-import com.foodapp.dao.impl.OrderDAOImpl;
 import com.foodapp.model.CartItem;
 import com.foodapp.model.User;
 
@@ -20,11 +19,13 @@ public class CheckoutServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+    protected void doGet(HttpServletRequest request,
+            HttpServletResponse response)
             throws ServletException, IOException {
 
         HttpSession session = request.getSession();
 
+        // Check whether user is logged in
         User user = (User) session.getAttribute("loggedInUser");
 
         if (user == null) {
@@ -32,35 +33,28 @@ public class CheckoutServlet extends HttpServlet {
             return;
         }
 
+        // Get cart from session
         @SuppressWarnings("unchecked")
-        Map<Integer, CartItem> cart = (Map<Integer, CartItem>) session.getAttribute("cart");
+        Map<Integer, CartItem> cart =
+                (Map<Integer, CartItem>) session.getAttribute("cart");
 
         if (cart == null || cart.isEmpty()) {
             response.sendRedirect("cart");
             return;
         }
 
-        // Calculate total
+        // Calculate total amount
         double total = 0;
-        int restaurantId = 0;
 
         for (CartItem item : cart.values()) {
             total += item.getSubtotal();
         }
 
-        // NOTE: since MenuItem doesn't carry restaurantId into CartItem yet,
-        // we default to restaurant_id = 1 for now (we'll improve this next)
-        restaurantId = 1;
-
-        OrderDAOImpl orderDao = new OrderDAOImpl();
-        int newOrderId = orderDao.placeOrder(user.getUserId(), restaurantId, total, cart);
-
-        // Clear the cart after placing order
-        session.removeAttribute("cart");
-
-        request.setAttribute("orderId", newOrderId);
+        // Send total to checkout page
         request.setAttribute("total", total);
 
-        request.getRequestDispatcher("order_success.jsp").forward(request, response);
+        // Open checkout page
+        request.getRequestDispatcher("checkout.jsp")
+               .forward(request, response);
     }
 }

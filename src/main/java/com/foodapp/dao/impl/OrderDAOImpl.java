@@ -22,47 +22,62 @@ public class OrderDAOImpl implements OrderDAO {
         connection = DBConnection.getConnection();
     }
 
+    // Insert into orders table
     private final String INSERT_ORDER =
-            "INSERT INTO orders (user_id, restaurant_id, total_amount, status) VALUES (?, ?, ?, ?)";
+            "INSERT INTO orders (user_id, restaurant_id, total_amount, delivery_address, payment_mode, status) VALUES (?, ?, ?, ?, ?, ?)";
 
+    // Insert into order_item table
     private final String INSERT_ORDER_ITEM =
             "INSERT INTO order_item (order_id, menu_id, quantity, subtotal) VALUES (?, ?, ?, ?)";
 
+    // Get all orders of a user
     private final String GET_ORDERS_BY_USER_ID =
             "SELECT * FROM orders WHERE user_id=? ORDER BY order_date DESC";
 
+    // Get all items of an order
     private final String GET_ORDER_ITEMS_BY_ORDER_ID =
             "SELECT m.item_name, m.image_url, oi.quantity, oi.subtotal " +
             "FROM order_item oi JOIN menu m ON oi.menu_id = m.menu_id " +
             "WHERE oi.order_id = ?";
 
     @Override
-    public int placeOrder(int userId, int restaurantId, double totalAmount, Map<Integer, CartItem> cart) {
+    public int placeOrder(int userId,
+                          int restaurantId,
+                          double totalAmount,
+                          String deliveryAddress,
+                          String paymentMode,
+                          Map<Integer, CartItem> cart) {
 
         int newOrderId = 0;
 
         try {
 
-            // Step 1: Insert into orders table
-            PreparedStatement orderStmt = connection.prepareStatement(INSERT_ORDER, Statement.RETURN_GENERATED_KEYS);
+            // Insert order
+            PreparedStatement orderStmt = connection.prepareStatement(
+                    INSERT_ORDER,
+                    Statement.RETURN_GENERATED_KEYS);
 
             orderStmt.setInt(1, userId);
             orderStmt.setInt(2, restaurantId);
             orderStmt.setDouble(3, totalAmount);
-            orderStmt.setString(4, "Pending");
+            orderStmt.setString(4, deliveryAddress);
+            orderStmt.setString(5, paymentMode);
+            orderStmt.setString(6, "Pending");
 
             orderStmt.executeUpdate();
 
-            // Step 2: Get the generated order_id
+            // Get generated order id
             ResultSet generatedKeys = orderStmt.getGeneratedKeys();
+
             if (generatedKeys.next()) {
                 newOrderId = generatedKeys.getInt(1);
             }
 
-            // Step 3: Insert each cart item into order_item table
+            // Insert cart items
             for (CartItem item : cart.values()) {
 
-                PreparedStatement itemStmt = connection.prepareStatement(INSERT_ORDER_ITEM);
+                PreparedStatement itemStmt =
+                        connection.prepareStatement(INSERT_ORDER_ITEM);
 
                 itemStmt.setInt(1, newOrderId);
                 itemStmt.setInt(2, item.getMenuId());
@@ -82,11 +97,13 @@ public class OrderDAOImpl implements OrderDAO {
     @Override
     public List<Order> getOrdersByUserId(int userId) {
 
-        List<Order> orders = new ArrayList<Order>();
+        List<Order> orders = new ArrayList<>();
 
         try {
 
-            PreparedStatement ps = connection.prepareStatement(GET_ORDERS_BY_USER_ID);
+            PreparedStatement ps =
+                    connection.prepareStatement(GET_ORDERS_BY_USER_ID);
+
             ps.setInt(1, userId);
 
             ResultSet rs = ps.executeQuery();
@@ -99,6 +116,8 @@ public class OrderDAOImpl implements OrderDAO {
                 order.setUserId(rs.getInt("user_id"));
                 order.setRestaurantId(rs.getInt("restaurant_id"));
                 order.setTotalAmount(rs.getDouble("total_amount"));
+                order.setDeliveryAddress(rs.getString("delivery_address"));
+                order.setPaymentMode(rs.getString("payment_mode"));
                 order.setStatus(rs.getString("status"));
                 order.setOrderDate(rs.getTimestamp("order_date"));
 
@@ -115,11 +134,13 @@ public class OrderDAOImpl implements OrderDAO {
     @Override
     public List<OrderItemDetail> getOrderItemsByOrderId(int orderId) {
 
-        List<OrderItemDetail> items = new ArrayList<OrderItemDetail>();
+        List<OrderItemDetail> items = new ArrayList<>();
 
         try {
 
-            PreparedStatement ps = connection.prepareStatement(GET_ORDER_ITEMS_BY_ORDER_ID);
+            PreparedStatement ps =
+                    connection.prepareStatement(GET_ORDER_ITEMS_BY_ORDER_ID);
+
             ps.setInt(1, orderId);
 
             ResultSet rs = ps.executeQuery();

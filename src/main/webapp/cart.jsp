@@ -188,7 +188,7 @@
         <span>₹<%= total %></span>
     </div>
 
-    <a class="checkout-btn" href="checkout">Proceed to Checkout</a>
+    <a class="checkout-btn" href="checkout.jsp">Proceed to Checkout</a>
     <a class="continue-link" href="restaurants" style="display:block; text-align:center; margin-top:15px;">← Add More Items</a>
 <%
     }

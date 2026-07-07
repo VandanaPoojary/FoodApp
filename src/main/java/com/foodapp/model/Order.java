@@ -4,12 +4,25 @@ import java.sql.Timestamp;
 
 public class Order {
 
+    // Variables
     private int orderId;
     private int userId;
     private int restaurantId;
     private double totalAmount;
+
+    // New variables
+    private String deliveryAddress;
+    private String paymentMode;
+
     private String status;
     private Timestamp orderDate;
+
+    // Default Constructor
+    public Order() {
+
+    }
+
+    // Getters and Setters
 
     public int getOrderId() {
         return orderId;
@@ -43,6 +56,22 @@ public class Order {
         this.totalAmount = totalAmount;
     }
 
+    public String getDeliveryAddress() {
+        return deliveryAddress;
+    }
+
+    public void setDeliveryAddress(String deliveryAddress) {
+        this.deliveryAddress = deliveryAddress;
+    }
+
+    public String getPaymentMode() {
+        return paymentMode;
+    }
+
+    public void setPaymentMode(String paymentMode) {
+        this.paymentMode = paymentMode;
+    }
+
     public String getStatus() {
         return status;
     }
@@ -57,5 +86,17 @@ public class Order {
 
     public void setOrderDate(Timestamp orderDate) {
         this.orderDate = orderDate;
+    }
+
+    @Override
+    public String toString() {
+        return "Order [orderId=" + orderId +
+                ", userId=" + userId +
+                ", restaurantId=" + restaurantId +
+                ", totalAmount=" + totalAmount +
+                ", deliveryAddress=" + deliveryAddress +
+                ", paymentMode=" + paymentMode +
+                ", status=" + status +
+                ", orderDate=" + orderDate + "]";
     }
 }
